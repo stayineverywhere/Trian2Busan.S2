@@ -26,7 +26,19 @@
 #define ACTION_PROVOKE 1
 #define ACTION_PULL 2
 
-int main(void) {
+#define TRUE 1
+#define FALSE 0
+
+int update_agro(int current, int move)
+{
+    if (move > 0) // 왼쪽으로 이동
+        return current + 1;
+    else // if (move == 0) // 제자리 대기
+        return current;
+}
+
+void intro()
+{
     //인트로
     printf("  *     *          **       *                **      *    * \n");
     printf("  *******        **  **     *****         ********   *    * \n");
@@ -40,43 +52,23 @@ int main(void) {
     printf("     *                                          **  **      \n");
     printf("     *                                            **        \n");
 
-    // 시민, 좀비, 열차의 길이 및 확률 변수 선언
-    int train_length;
-    int probability;
-    int stamina_ma = STM_MAX; // 마동석 체력
-    int aggro_ma = AGGRO_MAX; // 마동석 어그로
+}
 
-    // 시민, 좀비, 열차의 위치 변수 선언
-    int mp, zp, cp, omp, ozp, ocp;
-    int zt = 0; // 좀비 이동 플래그
 
-    srand(time(NULL));  // 난수 시드 설정
-
-    // 열차의 길이 입력 받기
-    while (1) {
-        printf("train length(%d ~ %d)>> ", LEN_MIN, LEN_MAX);
-        scanf_s("%d", &train_length);
-        if (train_length < LEN_MIN || train_length > LEN_MAX) {
-            continue;
-        }
-        else {
-            break;
-        }
+int get_value(char prompt[], int min_val, int max_val)
+{
+    int value;
+    printf("%s ", prompt, min_val, max_val);
+    scanf_s("%d", &value);
+    while (value < min_val || value > max_val) {
+        printf("%s ", prompt, min_val, max_val);
+        scanf_s("%d", &value);
     }
+    return value;
+}
 
-    // 확률 입력 받기
-    printf("percentile probability 'p'(%d ~ %d)>> ", PROB_MIN, PROB_MAX);
-    scanf_s("%d", &probability);
-    while (probability < PROB_MIN || probability > PROB_MAX) {
-        printf("percentile probability 'p'(%d ~ %d)>> ", PROB_MIN, PROB_MAX);
-        scanf_s("%d", &probability);
-    }
-
-    // 마동석, 좀비, 시민의 위치 초기화
-    mp = train_length - 2;
-    zp = train_length - 3;
-    cp = train_length - 6;
-
+void print_traIn(int train_length, int cp, int zp, int mp)
+{
     // 열차의 초기 상태 출력
     printf("\n");
     for (int i = 0; i < train_length; i++) {
@@ -98,6 +90,81 @@ int main(void) {
         printf("#");
     }
     printf("\n");
+}
+
+
+void print_citizen(int ocp, int cp)
+{
+    // 시민 상태 출력
+    printf("citizen : ");
+    if (ocp == cp) {
+        printf("stay %d\n", cp);
+    }
+    else {
+        printf("%d -> %d\n", ocp, cp);
+    }
+}
+
+void print_zombie(int ozp, int zp)
+{
+    // 좀비 상태 출력
+    printf("zombie  : ");
+    if (zt == 1) {
+        if (ozp == zp)
+            printf("stay %d\n", zp);
+        else
+            printf("%d -> %d\n", ozp, zp);
+
+    }
+    else {
+        printf("stay %d (cannot move)\n", zp);
+    }
+
+}
+
+int check_gameover(int cp, int zp)
+{
+    if (cp == 1) {
+        printf("\nSUCCESS!\n");
+        printf("citizen(s) escaped to the next train\n");
+        return TRUE;
+    }
+    else if (zp == cp + 1) {
+        printf("\nGAME OVER!\n");
+        printf("Citizen(s) has(have) been attacked by a zombie\n");
+        return TRUE;
+    }
+    return FALSE;
+}
+int main(void) {
+
+    // 인트로 화면 출력
+    intro();
+
+    // 시민, 좀비, 열차의 길이 및 확률 변수 선언
+    int train_length;
+    int probability;
+    int stamina_ma = STM_MAX; // 마동석 체력
+    int aggro_ma = AGGRO_MAX; // 마동석 어그로
+
+    // 시민, 좀비, 열차의 위치 변수 선언
+    int mp, zp, cp, omp, ozp, ocp;
+    int zt = 0; // 좀비 이동 플래그
+
+    srand(time(NULL));  // 난수 시드 설정
+
+    // 열차의 길이 입력 받기
+    train_length = get_value("train length(%d ~ %d)>> ", LEN_MIN, LEN_MAX);
+    // 확률 입력 받기
+    probability = get_value("percentile probability 'p'(%d ~ %d)>> ", PROB_MIN, PROB_MAX);
+
+    // 마동석, 좀비, 시민의 위치 초기화
+    mp = train_length - 2;
+    zp = train_length - 3;
+    cp = train_length - 6;
+
+    // 열차 상태 출력
+    print_traIn(train_length, cp, zp, mp);
 
     while (1) {
         // <이동> 페이즈
@@ -137,38 +204,15 @@ int main(void) {
         }
 
         // 열차 상태 출력
-        printf("\n");
-        for (int i = 0; i < train_length; i++) {
-            printf("#");
-        }
-        printf("\n#");
-        for (int i = 1; i < train_length - 1; i++) {
-            if (i == cp)
-                printf("C");
-            else if (i == zp)
-                printf("Z");
-            else if (i == mp)
-                printf("M");
-            else
-                printf(" ");
-        }
-        printf("#\n");
-        for (int i = 0; i < train_length; i++) {
-            printf("#");
-        }
-        printf("\n");
-
+        print_train(train_length, cp, zp, mp);
         // 시민 상태 출력
-        printf("\n시민 : 위치(%d), 어그로(%d)\n", cp, aggro_ma);
+        print_citizen(ocp, cp);
+        // 좈비 상태 출력
+        print_zombie(ozp, zp);
+        // 게임 종료 검사
+        if (check_gameover(cp, zp))
+            break;
 
-        // 좀비 상태 출력
-        printf("\n좀비 : ");
-        if (zt == 1) {
-            printf("위치(%d)\n", zp);
-        }
-        else {
-            printf("이동 불가능\n");
-        }
 
         // 마동석 이동 입력 받기
         printf("\n마동석 이동 페이즈\n");
