@@ -18,8 +18,5 @@
     <ClCompile Include="busan.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="busan3.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
