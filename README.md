@@ -77,6 +77,7 @@
      -> 좀비와 인접하지 않은 경우(직접 입력 , 선택지 2개)
         > ACTION_REST : 휴식 (어그로 1 감소 , 체력 1 증가)
         > ACTION_PROVO : 도발 ( 어그로 최대로 증가(AGGRO_MAX))
+        
      -> 좀비와 인접한 경우(직접 입력 , 선택지 3개)
         > ACTION_REST
         > ACTION_ROVO
